@@ -1,0 +1,56 @@
+:root {
+    --board-size: 600px;
+    --board-border: 10px;
+}
+
+#game-container {
+    position: relative;
+}
+
+#board-container {
+    width: var(--board-size);
+    height: var(--board-size);
+    display: grid;
+    grid-template-columns: repeat(8, 1fr);
+    grid-template-rows: repeat(8, 1fr);
+    border: var(--board-border) solid black
+}
+
+.dark {
+    background-color: #dc4c38;
+}
+
+.light {
+    background-color: #efeeee;
+}
+
+#pieces-container {
+    position: absolute;
+    top: var(--board-border);
+    left: var(--board-border);
+    width: var(--board-size);
+    height: var(--board-size);
+    display: grid;
+    grid-template-columns: repeat(8, 1fr);
+    grid-template-rows: repeat(8, 1fr);
+}
+
+.piece {
+    margin: auto;
+    width: 85%;
+    height: 85%;
+    border-radius: 50%;
+}
+
+.piece:hover {
+    cursor: pointer;
+}
+
+.player-1 {
+    background-color: #d3af3f;
+}
+
+.player-2 {
+    background-color: #202c8e;
+}
+
