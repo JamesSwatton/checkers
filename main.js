@@ -1,15 +1,30 @@
 const layout = [
-    "20202020",
-    "02020202",
-    "20202020",
-    "00000000",
-    "00000000",
-    "01010101",
-    "10101010",
-    "01010101"
+    [2, 0, 2, 0, 2, 0, 2, 0],
+    [0, 2, 0, 2, 0, 2, 0, 2],
+    [2, 0, 2, 0, 2, 0, 2, 0],
+    [0, 0, 0, 0, 0, 0, 0, 0],
+    [0, 0, 0, 0, 0, 0, 0, 0],
+    [0, 1, 0, 1, 0, 1, 0, 1],
+    [1, 0, 1, 0, 1, 0, 1, 0],
+    [0, 1, 0, 1, 0, 1, 0, 1]
 ];
 
+const paths = {
+    "1": [
+        { x: -1, y: 1 },
+        { x: 1, y: 1 }
+    ],
+    "2": [
+        { x: -1, y: -1 },
+        { x: 1, y: -1 }
+    ],
+    king: [this["1"], this["2"]]
+};
+
 const pieces = [...layout];
+
+// player related data
+let activePlayer = 1;
 let selectedPiecePos = {};
 let selectedMovePos = {};
 let selectedPiece = () => {
@@ -17,29 +32,47 @@ let selectedPiece = () => {
         ? pieces[selectedPiecePos.y][selectedPiecePos.x]
         : null;
 };
-let activePlayer = 1;
+let moves = {
+    moves: [],
+    captureMoves: []
+};
 
 renderBoard();
 renderPieces();
 
 // event listeners
-const p = document.querySelectorAll(".piece");
-p.forEach(piece => {
-    piece.addEventListener("click", event => {
-        selectedPiecePos = JSON.parse(event.target.getAttribute("position"));
-        console.log(selectedPiecePos);
-        console.log(selectedPiece());
-    });
+document.querySelector("#pieces-container").addEventListener("click", event => {
+    selectedPiecePos = JSON.parse(event.target.getAttribute("position"));
 });
 
-const b = document.querySelectorAll(".blank");
-console.log(b);
-b.forEach(blank => {
-    blank.addEventListener("click", event => {
-        selectedMovePos = JSON.parse(event.target.getAttribute("position"));
-        console.log(selectedMovePos);
-    });
-});
+// movement
+function getMoves() {
+    let moves = {};
+    let playerPaths = paths[`${activePlayer}`];
+    console.log(playerPaths);
+    for (let y = 0; y < pieces.length; y++) {
+        for (let x = 0; x < pieces[y].length; x++) {
+            if (pieces[y][x] == activePlayer) {
+                // get moves
+                moves.forEach(move => {
+                    let piecesAtMovePos = pieces[move.y][move.x];
+                    let newMove = [];
+                    if (piecesAtMovePos != undefined) {
+                        if (piecesAtMovePos == 0) {
+                            newMove.push({ x: x, y: y });
+                            newMove.push({ x: x, y: y });
+                        }
+                    }
+                });
+            }
+        }
+    }
+}
+
+function movePiece(selectedPiecePos, selectedMovePos) {
+    pieces[selectedMovePos.y][selectedMovePos.x] = activePlayer;
+    pieces[selectedPiecePos.y][selectedPiecePos.x] = 0;
+}
 
 // board and pieces rendering
 function renderBoard() {
@@ -61,6 +94,7 @@ function renderBoard() {
 
 function renderPieces() {
     const piecesContainer = document.getElementById("pieces-container");
+    piecesContainer.innerHTML = "";
     for (let y = 0; y < pieces.length; y++) {
         for (let x = 0; x < pieces[y].length; x++) {
             const piece = document.createElement("div");
