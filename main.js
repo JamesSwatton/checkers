@@ -42,18 +42,17 @@ renderMoveIndicators();
 // event listeners - GAME LOGIC
 document.querySelector("#pieces-container").addEventListener("click", event => {
     let selected = event.target.id;
-    if (!selectedPiecePos) {
-        if (hasSelectedValidPiecePos(selected, moves)) {
-            selectedPiecePos = selected;
-        }
-    } else if (selectedPiecePos && !selectedMovePos) {
+    if (hasSelectedValidPiecePos(selected, moves)) {
+        selectedPiecePos = selected;
+    }
+    if (selectedPiecePos && !selectedMovePos) {
         if (hasSelectedValidMovePos(selected, selectedPiecePos, moves)) {
             selectedMovePos = selected;
             movePiece(selectedPiecePos, selectedMovePos, moves);
-            renderPieces();
             prepNextTurn();
         }
     }
+    renderMoveIndicators();
 });
 
 // movement
@@ -84,7 +83,6 @@ function getMoves() {
                             piecesAtMovePos == opponent &&
                             pieces[newY - path.y][newX - path.x] == 0
                         ) {
-                            console.log(pieces[newY - path.y][newX - path.x]);
                             canCapture = true;
                             captureMoves[pieceKey].push([
                                 `{"x":${newX - path.x}, "y":${newY - path.y}}`,
@@ -152,8 +150,9 @@ function prepNextTurn() {
         canMove = false;
     }
     moves = getMoves();
-    console.log(`can capture: ${canCapture}`);
-    console.log(`can move: ${canMove}`);
+    renderPieces();
+    // console.log(`can capture: ${canCapture}`);
+    // console.log(`can move: ${canMove}`);
 }
 
 // board and pieces rendering
@@ -200,10 +199,27 @@ function renderPieces() {
 
 function renderMoveIndicators() {
     let ps = Object.keys(moves);
+    document.querySelectorAll(".blank").forEach(el => (el.innerHTML = ""));
+    document.querySelectorAll(".piece").forEach(el => (el.innerHTML = ""));
     ps.forEach(p => {
         let pElement = document.getElementById(p);
-        let marker = document.createElement("div");
-        marker.className = "marker";
+        let marker = createMarkerEl();
         pElement.appendChild(marker);
     });
+    if (selectedPiecePos) {
+        moves[selectedPiecePos].forEach(m => {
+            let mElement = document.getElementById(m[0]);
+            let marker = createMarkerEl();
+            mElement.appendChild(marker);
+        });
+    }
+}
+
+function createMarkerEl() {
+    let marker = document.createElement("div");
+    marker.className = "marker";
+    activePlayer == 1
+        ? (marker.style.backgroundColor = "black")
+        : (marker.style.backgroundColor = "white");
+    return marker;
 }

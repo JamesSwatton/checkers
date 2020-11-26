@@ -45,6 +45,12 @@
     border-radius: 50%;
 }
 
+.blank {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
 .piece:hover {
     cursor: pointer;
 }
@@ -61,6 +67,6 @@
     width: 10px;
     height: 10px;
     border-radius: 50%;
-    background-color: black;
+    pointer-events: none;
 }
 
