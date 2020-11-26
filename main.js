@@ -18,60 +18,134 @@ const paths = {
         { x: -1, y: -1 },
         { x: 1, y: -1 }
     ],
-    king: [this["1"], this["2"]]
+    get king() {
+        return [this["1"], this["2"]];
+    }
 };
 
 const pieces = [...layout];
 
 // player related data
 let activePlayer = 1;
-let selectedPiecePos = {};
-let selectedMovePos = {};
-let selectedPiece = () => {
-    return selectedPiecePos
-        ? pieces[selectedPiecePos.y][selectedPiecePos.x]
-        : null;
-};
-let moves = {
-    moves: [],
-    captureMoves: []
-};
+let opponent = 2;
+let selectedPiecePos = null;
+let selectedMovePos = null;
+let moves = {};
+let canCapture = false;
+let canMove = false;
 
 renderBoard();
 renderPieces();
+moves = getMoves();
 
 // event listeners
 document.querySelector("#pieces-container").addEventListener("click", event => {
-    selectedPiecePos = JSON.parse(event.target.getAttribute("position"));
+    let selected = event.target.getAttribute("position");
+    if (!selectedPiecePos) {
+        if (hasSelectedValidPiecePos(selected, moves)) {
+            selectedPiecePos = selected;
+        }
+    } else if (selectedPiecePos && !selectedMovePos) {
+        if (hasSelectedValidMovePos(selected, selectedPiecePos, moves)) {
+            selectedMovePos = selected;
+            movePiece(selectedPiecePos, selectedMovePos, moves);
+            renderPieces();
+            prepNextTurn();
+        }
+    }
 });
 
 // movement
 function getMoves() {
+    let currentPos;
     let moves = {};
+    let captureMoves = {};
+
     let playerPaths = paths[`${activePlayer}`];
-    console.log(playerPaths);
     for (let y = 0; y < pieces.length; y++) {
         for (let x = 0; x < pieces[y].length; x++) {
-            if (pieces[y][x] == activePlayer) {
+            currentPos = pieces[y][x];
+            if (currentPos == activePlayer) {
                 // get moves
-                moves.forEach(move => {
-                    let piecesAtMovePos = pieces[move.y][move.x];
-                    let newMove = [];
+                pieceKey = `{"x":${x}, "y":${y}}`;
+                moves[pieceKey] = [];
+                captureMoves[pieceKey] = [];
+                playerPaths.forEach(path => {
+                    let newY = y - path.y;
+                    let newX = x - path.x;
+                    let piecesAtMovePos = pieces[newY][newX];
                     if (piecesAtMovePos != undefined) {
-                        if (piecesAtMovePos == 0) {
-                            newMove.push({ x: x, y: y });
-                            newMove.push({ x: x, y: y });
+                        if (
+                            piecesAtMovePos == opponent &&
+                            pieces[newY - path.y][newX - path.x] == 0
+                        ) {
+                            canCapture = true;
+                            captureMoves[pieceKey].push([
+                                `{"x":${newX - path.x}, "y":${newY - path.y}}`,
+                                `{"x":${newX}, "y":${newY}}`
+                            ]);
+                        } else if (piecesAtMovePos == 0) {
+                            canMove = true;
+                            moves[pieceKey].push([
+                                `{"x":${newX}, "y":${newY}}`
+                            ]);
                         }
                     }
                 });
+                if (captureMoves[pieceKey].length == 0) {
+                    delete captureMoves[pieceKey];
+                }
+                if (moves[pieceKey].length == 0) {
+                    delete moves[pieceKey];
+                }
             }
         }
     }
+    return canCapture ? captureMoves : moves;
 }
 
-function movePiece(selectedPiecePos, selectedMovePos) {
-    pieces[selectedMovePos.y][selectedMovePos.x] = activePlayer;
-    pieces[selectedPiecePos.y][selectedPiecePos.x] = 0;
+function hasSelectedValidPiecePos(selected, moves) {
+    return selected in moves;
+}
+
+function hasSelectedValidMovePos(selected, selectedPiecePos, moves) {
+    return moves[selectedPiecePos].map(m => m[0]).includes(selected);
+}
+
+function movePiece(selectedPiecePos, selectedMovePos, moves) {
+    let parsedPiecePos = JSON.parse(selectedPiecePos);
+    // TODO: this logic is a bit smelly
+    let parsedMovePos = JSON.parse(selectedMovePos);
+    let parsedCapturePos;
+    if (canCapture) {
+        parsedCapturePos = JSON.parse(
+            moves[selectedPiecePos].find(m => {
+                return m[0] == selectedMovePos;
+            })[1]
+        );
+    }
+    console.log(parsedCapturePos);
+
+    pieces[parsedMovePos.y][parsedMovePos.x] = activePlayer;
+    pieces[parsedPiecePos.y][parsedPiecePos.x] = 0;
+    if (canCapture) pieces[parsedCapturePos.y][parsedCapturePos.x] = 0;
+}
+
+// clearing, swapping and resetting
+
+function prepNextTurn() {
+    selectedPiecePos = null;
+    selectedMovePos = null;
+    if (activePlayer == 1) {
+        activePlayer = 2;
+        opponent = 1;
+    } else {
+        activePlayer = 1;
+        opponent = 2;
+        canCapture = false;
+        canMove = false;
+    }
+    moves = getMoves();
 }
 
 // board and pieces rendering
