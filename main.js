@@ -37,10 +37,11 @@ let canMove = false;
 renderBoard();
 renderPieces();
 moves = getMoves();
+renderMoveIndicators();
 
-// event listeners
+// event listeners - GAME LOGIC
 document.querySelector("#pieces-container").addEventListener("click", event => {
-    let selected = event.target.getAttribute("position");
+    let selected = event.target.id;
     if (!selectedPiecePos) {
         if (hasSelectedValidPiecePos(selected, moves)) {
             selectedPiecePos = selected;
@@ -73,12 +74,17 @@ function getMoves() {
                 playerPaths.forEach(path => {
                     let newY = y - path.y;
                     let newX = x - path.x;
-                    let piecesAtMovePos = pieces[newY][newX];
-                    if (piecesAtMovePos != undefined) {
+                    let piecesAtMovePos;
+                    if (
+                        pieces[newY] != undefined &&
+                        pieces[newX] != undefined
+                    ) {
+                        piecesAtMovePos = pieces[newY][newX];
                         if (
                             piecesAtMovePos == opponent &&
                             pieces[newY - path.y][newX - path.x] == 0
                         ) {
+                            console.log(pieces[newY - path.y][newX - path.x]);
                             canCapture = true;
                             captureMoves[pieceKey].push([
                                 `{"x":${newX - path.x}, "y":${newY - path.y}}`,
@@ -117,18 +123,16 @@ function movePiece(selectedPiecePos, selectedMovePos, moves) {
     // TODO: this logic is a bit smelly
     let parsedMovePos = JSON.parse(selectedMovePos);
     let parsedCapturePos;
+    pieces[parsedMovePos.y][parsedMovePos.x] = activePlayer;
+    pieces[parsedPiecePos.y][parsedPiecePos.x] = 0;
     if (canCapture) {
         parsedCapturePos = JSON.parse(
             moves[selectedPiecePos].find(m => {
                 return m[0] == selectedMovePos;
             })[1]
         );
+        pieces[parsedCapturePos.y][parsedCapturePos.x] = 0;
     }
-    console.log(parsedCapturePos);
-
-    pieces[parsedMovePos.y][parsedMovePos.x] = activePlayer;
-    pieces[parsedPiecePos.y][parsedPiecePos.x] = 0;
-    if (canCapture) pieces[parsedCapturePos.y][parsedCapturePos.x] = 0;
 }
 
 // clearing, swapping and resetting
@@ -139,6 +143,8 @@ function prepNextTurn() {
     if (activePlayer == 1) {
         activePlayer = 2;
         opponent = 1;
+        canCapture = false;
+        canMove = false;
     } else {
         activePlayer = 1;
         opponent = 2;
@@ -146,6 +152,8 @@ function prepNextTurn() {
         canMove = false;
     }
     moves = getMoves();
+    console.log(`can capture: ${canCapture}`);
+    console.log(`can move: ${canMove}`);
 }
 
 // board and pieces rendering
@@ -173,7 +181,7 @@ function renderPieces() {
         for (let x = 0; x < pieces[y].length; x++) {
             const piece = document.createElement("div");
             piece.className = "piece";
-            piece.setAttribute("position", `{"x":${x}, "y":${y}}`);
+            piece.id = `{"x":${x}, "y":${y}}`;
             if (pieces[y][x] == 1) {
                 piece.classList.add("player-1");
                 piecesContainer.appendChild(piece);
@@ -183,9 +191,19 @@ function renderPieces() {
             } else {
                 const blank = document.createElement("div");
                 blank.className = "blank";
-                blank.setAttribute("position", `{"x":${x}, "y":${y}}`);
+                blank.id = `{"x":${x}, "y":${y}}`;
                 piecesContainer.appendChild(blank);
             }
         }
     }
+}
+
+function renderMoveIndicators() {
+    let ps = Object.keys(moves);
+    ps.forEach(p => {
+        let pElement = document.getElementById(p);
+        let marker = document.createElement("div");
+        marker.className = "marker";
+        pElement.appendChild(marker);
+    });
 }

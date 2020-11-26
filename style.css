@@ -36,6 +36,9 @@
 }
 
 .piece {
+    display: flex;
+    justify-content: center;
+    align-items: center;
     margin: auto;
     width: 85%;
     height: 85%;
@@ -52,5 +55,12 @@
 
 .player-2 {
     background-color: #202c8e;
+}
+
+.marker {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background-color: black;
 }
 
