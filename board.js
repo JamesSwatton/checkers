@@ -15,13 +15,17 @@ const Board = {
         "02020202",
         "20202020",
         "00000000",
-        "00200000",
-        "01010101",
+        "00001000",
+        "01010001",
         "10101010",
         "01010101"
     ],
 
-    pieces: [],
+    _pieces: [],
+
+    get pieces() {
+        return this._pieces;
+    },
 
     // SETUP
     setup() {
@@ -40,12 +44,12 @@ const Board = {
                     ? r.push({ type: "blank" })
                     : r.push(newPiece(j, i, el));
             });
-            this.pieces.push(r);
+            this._pieces.push(r);
         });
     },
 
     calcMoves() {
-        this.pieces.forEach((row, y) => {
+        this._pieces.forEach((row, y) => {
             row.forEach((p, x) => {
                 if (p.type == "piece") p.clearMoves();
                 if (p.player == activePlayer) {
@@ -53,29 +57,38 @@ const Board = {
                         if (
                             // check for std move
                             this.pathIsInBoard(x, y, path) &&
-                            this.pieces[y - path.y][x - path.x].type == "blank"
+                            this._pieces[y - path.y][x - path.x].type == "blank"
                         ) {
+                            console.log("see me");
                             canMove = true;
-                            p.moves = `{"x":${x - path.x}, "y":${y - path.y}}`;
+                            p.moves = `{"x":${x - path.x},"y":${y - path.y}}`;
                         } else if (
                             // check for capture move
                             this.pathIsInBoard(x, y, path) &&
                             this.pathIsInBoard(x - path.x, y - path.y, path) &&
-                            this.pieces[y - path.y][x - path.x].player ==
+                            this._pieces[y - path.y][x - path.x].player ==
                                 opponent &&
-                            this.pieces[y - path.y * 2][x - path.x * 2].type ==
+                            this._pieces[y - path.y * 2][x - path.x * 2].type ==
                                 "blank"
                         ) {
                             canCapture = true;
                             p.moves = [
-                                `{"x":${x - path.x}, "y":${y - path.y}}`,
-                                `{"x":${x - path.x * 2}, "y":${y - path.y * 2}}`
+                                `{"x":${x - path.x},"y":${y - path.y}}`,
+                                `{"x":${x - path.x * 2},"y":${y - path.y * 2}}`
                             ];
                         }
                     });
                 }
             });
         });
+    },
+
+    // MOVEMENT
+    movePiece(move) {
+        let [p, m] = move;
+        console.log("hi");
+        this._pieces[m.y][m.x] = this._pieces[p.y][p.x];
+        this._pieces[p.y][p.x] = { type: "blank" };
     },
 
     // RENDERING
@@ -98,9 +111,9 @@ const Board = {
     renderPieces() {
         const pc = document.getElementById("pieces-container");
         pc.innerHTML = "";
-        for (let y = 0; y < this.pieces.length; y++) {
-            for (let x = 0; x < this.pieces[y].length; x++) {
-                let p = this.pieces[y][x];
+        for (let y = 0; y < this._pieces.length; y++) {
+            for (let x = 0; x < this._pieces[y].length; x++) {
+                let p = this._pieces[y][x];
                 const pEl = document.createElement("div");
                 pEl.className = "piece";
                 pEl.id = `{"x":${x}, "y":${y}}`;
@@ -121,7 +134,6 @@ const Board = {
     },
 
     // HELPERS
-
     pathIsInBoard(x, y, path) {
         if (
             x - path.x >= 0 &&
@@ -131,5 +143,10 @@ const Board = {
         ) {
             return true;
         }
+    },
+
+    prepNextTurn() {
+        this.calcMoves();
+        this.renderPieces();
     }
 };

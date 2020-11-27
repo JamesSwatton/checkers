@@ -4,7 +4,6 @@ function newPiece(x, y, player) {
         y,
         player,
         type: "piece",
-        king: false,
         _moves: {
             std: [],
             capture: []
@@ -22,16 +21,20 @@ function newPiece(x, y, player) {
                 return [this["1"], this["2"]];
             }
         },
+        get isKing() {
+            return (y == 0 && this.player == "1") ||
+                (y == 7 && this.player == "2")
+                ? true
+                : false;
+        },
         get paths() {
             return this.king ? this._paths.king : this._paths[this.player];
         },
         get moves() {
             if (this._moves.capture.length > 0) {
                 return this._moves.capture;
-            } else if (this._moves.std.length > 0) {
-                return this._moves.std;
             } else {
-                return null;
+                return this._moves.std;
             }
         },
         set moves(m) {
