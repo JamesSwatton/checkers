@@ -1,12 +1,12 @@
 const layout = [
-    [2, 0, 2, 0, 2, 0, 2, 0],
-    [0, 2, 0, 2, 0, 2, 0, 2],
-    [2, 0, 2, 0, 2, 0, 2, 0],
-    [0, 0, 0, 0, 0, 0, 0, 0],
-    [0, 0, 0, 0, 0, 0, 0, 0],
-    [0, 1, 0, 1, 0, 1, 0, 1],
-    [1, 0, 1, 0, 1, 0, 1, 0],
-    [0, 1, 0, 1, 0, 1, 0, 1]
+    ["2", "0", "2", "0", "2", "0", "2", "0"],
+    ["0", "2", "0", "2", "0", "2", "0", "2"],
+    ["2", "0", "2", "0", "2", "0", "2", "0"],
+    ["0", "0", "0", "0", "0", "0", "0", "0"],
+    ["0", "0", "0", "0", "0", "0", "0", "0"],
+    ["0", "1", "0", "1", "0", "1", "0", "1"],
+    ["1", "0", "1", "0", "1", "0", "1", "0"],
+    ["0", "1", "0", "1", "0", "1", "0", "1"]
 ];
 
 const paths = {
@@ -26,8 +26,8 @@ const paths = {
 const pieces = [...layout];
 
 // player related data
-let activePlayer = 1;
-let opponent = 2;
+let activePlayer = "1";
+let opponent = "2";
 let selectedPiecePos = null;
 let selectedMovePos = null;
 let moves = {};
@@ -71,24 +71,25 @@ function getMoves() {
                 moves[pieceKey] = [];
                 captureMoves[pieceKey] = [];
                 playerPaths.forEach(path => {
-                    let newY = y - path.y;
-                    let newX = x - path.x;
-                    let piecesAtMovePos;
-                    if (
-                        pieces[newY] != undefined &&
-                        pieces[newX] != undefined
-                    ) {
-                        piecesAtMovePos = pieces[newY][newX];
-                        if (
-                            piecesAtMovePos == opponent &&
-                            pieces[newY - path.y][newX - path.x] == 0
-                        ) {
-                            canCapture = true;
-                            captureMoves[pieceKey].push([
-                                `{"x":${newX - path.x}, "y":${newY - path.y}}`,
-                                `{"x":${newX}, "y":${newY}}`
-                            ]);
-                        } else if (piecesAtMovePos == 0) {
+                    if (pathIsInBoard(x, y, path)) {
+                        let newY = y - path.y;
+                        let newX = x - path.x;
+                        let piecesAtMovePos = pieces[newY][newX];
+                        if (pathIsInBoard(newX, newY, path)) {
+                            if (
+                                piecesAtMovePos == opponent &&
+                                pieces[newY - path.y][newX - path.x] == "0"
+                            ) {
+                                canCapture = true;
+                                captureMoves[pieceKey].push([
+                                    `{"x":${newX - path.x}, "y":${
+                                        newY - path.y
+                                    }}`,
+                                    `{"x":${newX}, "y":${newY}}`
+                                ]);
+                            }
+                        }
+                        if (piecesAtMovePos == "0") {
                             canMove = true;
                             moves[pieceKey].push([
                                 `{"x":${newX}, "y":${newY}}`
@@ -108,6 +109,17 @@ function getMoves() {
     return canCapture ? captureMoves : moves;
 }
 
+function pathIsInBoard(x, y, path) {
+    if (
+        x - path.x >= 0 &&
+        x - path.x < 8 &&
+        y - path.y >= 0 &&
+        y - path.y < 8
+    ) {
+        return true;
+    }
+}
+
 function hasSelectedValidPiecePos(selected, moves) {
     return selected in moves;
 }
@@ -122,37 +134,64 @@ function movePiece(selectedPiecePos, selectedMovePos, moves) {
     let parsedMovePos = JSON.parse(selectedMovePos);
     let parsedCapturePos;
     pieces[parsedMovePos.y][parsedMovePos.x] = activePlayer;
-    pieces[parsedPiecePos.y][parsedPiecePos.x] = 0;
+    pieces[parsedPiecePos.y][parsedPiecePos.x] = "0";
     if (canCapture) {
         parsedCapturePos = JSON.parse(
             moves[selectedPiecePos].find(m => {
                 return m[0] == selectedMovePos;
             })[1]
         );
-        pieces[parsedCapturePos.y][parsedCapturePos.x] = 0;
+        pieces[parsedCapturePos.y][parsedCapturePos.x] = "0";
+    }
+}
+
+function makeKing(x, y, piece) {
+    if (x == 0 && piece == "1") {
+        moves[y][x] = "1K";
+    } else if (x == 7 && piece == "2") {
+        moves[y][x] = "2K";
     }
 }
 
 // clearing, swapping and resetting
 
 function prepNextTurn() {
+    // continue turn logic
+    if (canCapture) {
+        canCapture = false;
+        canMove = false;
+        moves = getMoves();
+        if (canCapture && moves[selectedMovePos]) {
+            // TODO restrict to only one key value pair
+            selectedPiecePos = null;
+            selectedMovePos = null;
+            renderPieces();
+        } else {
+            resetGlobalVars();
+            moves = getMoves();
+            renderPieces();
+        }
+    } else {
+        resetGlobalVars();
+        moves = getMoves();
+        renderPieces();
+    }
+}
+
+function resetGlobalVars() {
     selectedPiecePos = null;
     selectedMovePos = null;
-    if (activePlayer == 1) {
-        activePlayer = 2;
-        opponent = 1;
+    if (activePlayer == "1") {
+        activePlayer = "2";
+        opponent = "1";
         canCapture = false;
         canMove = false;
     } else {
-        activePlayer = 1;
-        opponent = 2;
+        activePlayer = "1";
+        opponent = "2";
         canCapture = false;
         canMove = false;
     }
-    moves = getMoves();
-    renderPieces();
-    // console.log(`can capture: ${canCapture}`);
-    // console.log(`can move: ${canMove}`);
 }
 
 // board and pieces rendering
@@ -181,10 +220,10 @@ function renderPieces() {
             const piece = document.createElement("div");
             piece.className = "piece";
             piece.id = `{"x":${x}, "y":${y}}`;
-            if (pieces[y][x] == 1) {
+            if (pieces[y][x] == "1") {
                 piece.classList.add("player-1");
                 piecesContainer.appendChild(piece);
-            } else if (pieces[y][x] == 2) {
+            } else if (pieces[y][x] == "2") {
                 piece.classList.add("player-2");
                 piecesContainer.appendChild(piece);
             } else {
@@ -218,7 +257,7 @@ function renderMoveIndicators() {
 function createMarkerEl() {
     let marker = document.createElement("div");
     marker.className = "marker";
-    activePlayer == 1
+    activePlayer == "1"
         ? (marker.style.backgroundColor = "black")
         : (marker.style.backgroundColor = "white");
     return marker;
