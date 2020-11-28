@@ -152,6 +152,23 @@ const Board = {
         }
     },
 
+    renderMoveIndicators() {
+        document.querySelectorAll(".blank").forEach(el => (el.innerHTML = ""));
+        document.querySelectorAll(".piece").forEach(el => (el.innerHTML = ""));
+        ps.forEach(p => {
+            let pElement = document.getElementById(p);
+            let marker = createMarkerEl();
+            pElement.appendChild(marker);
+        });
+        if (selectedPiecePos) {
+            moves[selectedPiecePos].forEach(m => {
+                let mElement = document.getElementById(m[0]);
+                let marker = createMarkerEl();
+                mElement.appendChild(marker);
+            });
+        }
+    },
+
     // HELPERS
     getPiece(coor) {
         return this._pieces[coor.y][coor.x];

@@ -7,7 +7,7 @@ let opponent = "2";
 let move = [];
 
 // USER INTERACTION
-Window.addEventListener("load", () => {
+window.addEventListener("load", () => {
     board.setup();
     document
         .getElementById("pieces-container")
