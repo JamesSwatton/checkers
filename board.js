@@ -31,6 +31,17 @@ const Board = {
 
     canMove: false,
 
+    _possibleMoves: {
+        std: {},
+        capture: {}
+    },
+
+    get possibleMoves() {
+        return this._possibleMoves.capture.length > 0
+            ? this._possibleMoves.capture
+            : this._possibleMoves.std;
+    },
+
     // SETUP
     setup() {
         this.createPieces();
@@ -55,8 +66,11 @@ const Board = {
     calcMoves() {
         this._pieces.forEach((row, y) => {
             row.forEach((p, x) => {
-                if (p.type == "piece") p.clearMoves();
                 if (p.player == activePlayer) {
+                    // set key in possible moves
+                    let pKey = `{"x":${x},"y":${y}}`;
+                    this._possibleMoves.std[pKey] = [];
+                    this._possibleMoves.capture[pKey] = [];
                     p.paths.forEach(path => {
                         if (
                             // check for std move
@@ -64,7 +78,9 @@ const Board = {
                             this._pieces[y - path.y][x - path.x].type == "blank"
                         ) {
                             this.canMove = true;
-                            p.moves = `{"x":${x - path.x},"y":${y - path.y}}`;
+                            this._possibleMoves.std[pKey].push(
+                                `{"x":${x - path.x},"y":${y - path.y}}`
+                            );
                         } else if (
                             // check for capture move
                             this.pathIsInBoard(x, y, path) &&
@@ -75,15 +91,19 @@ const Board = {
                                 "blank"
                         ) {
                             this.canCapture = true;
-                            p.moves = [
+                            this._possibleMoves.capture[pKey].push([
                                 `{"x":${x - path.x},"y":${y - path.y}}`,
                                 `{"x":${x - path.x * 2},"y":${y - path.y * 2}}`
-                            ];
+                            ]);
                         }
                     });
+                    if (this.possibleMoves[pKey].length == 0) {
+                        delete this.possibleMoves[pKey];
+                    }
                 }
             });
         });
+        console.log(this.possibleMoves);
     },
 
     // MOVEMENT
@@ -219,6 +239,7 @@ const Board = {
     },
 
     prepNextTurn() {
+        this._possibleMoves = { std: {}, capture: {} };
         this.canCapture = false;
         this.canMove = false;
         this.calcMoves();
