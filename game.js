@@ -4,34 +4,35 @@ board = Object.create(Board);
 // STATE
 let activePlayer = "1";
 let opponent = "2";
-let canMove;
-let canCapture;
 let move = [];
 
-window.addEventListener("load", () => {
+// USER INTERACTION
+Window.addEventListener("load", () => {
     board.setup();
     document
         .getElementById("pieces-container")
         .addEventListener("click", ev => {
-            // GAME LOGIC
-            let coor = JSON.parse(ev.target.id);
-            // populate move
-            if (isValidPiece(coor, board.pieces)) {
-                move[0] = coor;
-                move[1] = null;
-            } else if (move[0] && isValidBlank(move[0], coor, board.pieces)) {
-                move[1] = coor;
-            }
-            // move piece if move is valid
-            if (move.includes(null) || move.length == 0) {
-                console.log("not valid move");
-                return;
-            } else {
-                console.log("valid move");
-                board.movePiece(move);
-                swapPlayers();
-                move = [];
-                board.prepNextTurn();
+            // won't throw and error if you select the board
+            if (ev.target.id != "pieces-container") {
+                let coor = JSON.parse(ev.target.id);
+                if (board.getPiece(coor).player == activePlayer) {
+                    move[0] = coor;
+                    move[1] = null;
+                } else if (board.getPiece(coor).type == "blank") {
+                    move[1] = coor;
+                }
+                if (
+                    move.includes(null) ||
+                    move.includes(undefined) ||
+                    move.length == 0
+                ) {
+                    return;
+                } else {
+                    if (board.movePiece(move)) {
+                        swapPlayers();
+                        board.prepNextTurn();
+                    }
+                }
             }
         });
 });
@@ -45,12 +46,4 @@ function swapPlayers() {
         activePlayer = "1";
         opponent = "2";
     }
-}
-
-function isValidPiece(coor, pieces) {
-    return pieces[coor.y][coor.x].player == activePlayer ? true : false;
-}
-
-function isValidBlank(p, coor, pieces) {
-    return pieces[p.y][p.x].moves.includes(JSON.stringify(coor)) ? true : false;
 }

@@ -27,6 +27,10 @@ const Board = {
         return this._pieces;
     },
 
+    canCapture: false,
+
+    canMove: false,
+
     // SETUP
     setup() {
         this.createPieces();
@@ -59,8 +63,7 @@ const Board = {
                             this.pathIsInBoard(x, y, path) &&
                             this._pieces[y - path.y][x - path.x].type == "blank"
                         ) {
-                            console.log("see me");
-                            canMove = true;
+                            this.canMove = true;
                             p.moves = `{"x":${x - path.x},"y":${y - path.y}}`;
                         } else if (
                             // check for capture move
@@ -71,7 +74,7 @@ const Board = {
                             this._pieces[y - path.y * 2][x - path.x * 2].type ==
                                 "blank"
                         ) {
-                            canCapture = true;
+                            this.canCapture = true;
                             p.moves = [
                                 `{"x":${x - path.x},"y":${y - path.y}}`,
                                 `{"x":${x - path.x * 2},"y":${y - path.y * 2}}`
@@ -86,9 +89,25 @@ const Board = {
     // MOVEMENT
     movePiece(move) {
         let [p, m] = move;
-        console.log("hi");
-        this._pieces[m.y][m.x] = this._pieces[p.y][p.x];
-        this._pieces[p.y][p.x] = { type: "blank" };
+        let selP = this.getPiece(p);
+        if (this.isValidMove(move)) {
+            // remove opponent piece if catpuring
+            if (selP.canCapture) {
+                selP.moves.forEach(mv => {
+                    if (mv.includes(JSON.stringify(m))) {
+                        let targCoor = JSON.parse(mv[0]);
+                        this._pieces[targCoor.y][targCoor.x] = {
+                            type: "blank"
+                        };
+                    }
+                });
+            }
+            this._pieces[m.y][m.x] = this._pieces[p.y][p.x];
+            this._pieces[m.y][m.x].x = m.x;
+            this._pieces[m.y][m.x].y = m.y;
+            this._pieces[p.y][p.x] = { type: "blank" };
+            return true;
+        }
     },
 
     // RENDERING
@@ -116,7 +135,7 @@ const Board = {
                 let p = this._pieces[y][x];
                 const pEl = document.createElement("div");
                 pEl.className = "piece";
-                pEl.id = `{"x":${x}, "y":${y}}`;
+                pEl.id = `{"x":${x},"y":${y}}`;
                 if (p.player == "1") {
                     pEl.classList.add("player-1");
                     pc.appendChild(pEl);
@@ -134,6 +153,10 @@ const Board = {
     },
 
     // HELPERS
+    getPiece(coor) {
+        return this._pieces[coor.y][coor.x];
+    },
+
     pathIsInBoard(x, y, path) {
         if (
             x - path.x >= 0 &&
@@ -145,7 +168,42 @@ const Board = {
         }
     },
 
+    isValidMove(move) {
+        let [p, m] = move;
+        let selP = this.getPiece(p);
+        // console.log(JSON.stringify(m));
+        console.log(`can move: ${this.canMove}`);
+        console.log(`can capture: ${this.canCapture}`);
+        // console.log(`selP can move: ${selP.canMove}`);
+        // console.log(`selP moves: ${selP.moves}`);
+        // console.log(
+        //     `selP m in moves: ${selP.moves.includes(JSON.stringify(m))}`
+        // );
+        console.log(this._pieces);
+        if (
+            this.canCapture &&
+            selP.canCapture &&
+            selP.moves.map(mv => mv[1]).includes(JSON.stringify(m))
+        ) {
+            console.log("valid capture move");
+            return true;
+        } else if (
+            !this.canCapture &&
+            this.canMove &&
+            selP.canMove &&
+            selP.moves.includes(JSON.stringify(m))
+        ) {
+            console.log("valid move");
+            return true;
+        } else {
+            console.log("invalid move");
+            return false;
+        }
+    },
+
     prepNextTurn() {
+        this.canCapture = false;
+        this.canMove = false;
         this.calcMoves();
         this.renderPieces();
     }
