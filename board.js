@@ -27,9 +27,28 @@ const Board = {
         return this._pieces;
     },
 
-    canCapture: false,
+    _selectedPieceCoor: "",
 
-    canMove: false,
+    set selectedPieceCoor(coor) {
+        this._selectedPieceCoor = coor;
+    },
+
+    _canCapture: false,
+
+    get canCapture() {
+        return Object.keys(this._possibleMoves.capture).length > 0
+            ? true
+            : false;
+    },
+
+    _canMove: false,
+
+    get canMove() {
+        return !this.canCapture &&
+            Object.keys(this._possibleMoves.std).length > 0
+            ? true
+            : false;
+    },
 
     _possibleMoves: {
         std: {},
@@ -37,7 +56,7 @@ const Board = {
     },
 
     get possibleMoves() {
-        return this._possibleMoves.capture.length > 0
+        return Object.keys(this._possibleMoves.capture).length > 0
             ? this._possibleMoves.capture
             : this._possibleMoves.std;
     },
@@ -48,6 +67,7 @@ const Board = {
         this.calcMoves();
         this.renderBoard();
         this.renderPieces();
+        this.renderMoveIndicators();
     },
 
     createPieces() {
@@ -68,19 +88,15 @@ const Board = {
             row.forEach((p, x) => {
                 if (p.player == activePlayer) {
                     // set key in possible moves
-                    let pKey = `{"x":${x},"y":${y}}`;
-                    this._possibleMoves.std[pKey] = [];
-                    this._possibleMoves.capture[pKey] = [];
                     p.paths.forEach(path => {
                         if (
                             // check for std move
                             this.pathIsInBoard(x, y, path) &&
                             this._pieces[y - path.y][x - path.x].type == "blank"
                         ) {
-                            this.canMove = true;
-                            this._possibleMoves.std[pKey].push(
+                            this.addPiece(`{"x":${x},"y":${y}}`, "std", [
                                 `{"x":${x - path.x},"y":${y - path.y}}`
-                            );
+                            ]);
                         } else if (
                             // check for capture move
                             this.pathIsInBoard(x, y, path) &&
@@ -90,42 +106,40 @@ const Board = {
                             this._pieces[y - path.y * 2][x - path.x * 2].type ==
                                 "blank"
                         ) {
-                            this.canCapture = true;
-                            this._possibleMoves.capture[pKey].push([
-                                `{"x":${x - path.x},"y":${y - path.y}}`,
-                                `{"x":${x - path.x * 2},"y":${y - path.y * 2}}`
+                            this.addPiece(`{"x":${x},"y":${y}}`, "capture", [
+                                `{"x":${x - path.x * 2},"y":${y - path.y * 2}}`,
+                                `{"x":${x - path.x},"y":${y - path.y}}`
                             ]);
                         }
                     });
-                    if (this.possibleMoves[pKey].length == 0) {
-                        delete this.possibleMoves[pKey];
-                    }
                 }
             });
         });
-        console.log(this.possibleMoves);
     },
 
     // MOVEMENT
     movePiece(move) {
         let [p, m] = move;
-        let selP = this.getPiece(p);
+        let parsedP = JSON.parse(p);
+        let parsedM = JSON.parse(m);
         if (this.isValidMove(move)) {
             // remove opponent piece if catpuring
-            if (selP.canCapture) {
-                selP.moves.forEach(mv => {
-                    if (mv.includes(JSON.stringify(m))) {
-                        let targCoor = JSON.parse(mv[0]);
+            if (this.canCapture) {
+                this.possibleMoves[p].forEach(mv => {
+                    if (mv.includes(m)) {
+                        let targCoor = JSON.parse(mv[1]);
                         this._pieces[targCoor.y][targCoor.x] = {
                             type: "blank"
                         };
                     }
                 });
             }
-            this._pieces[m.y][m.x] = this._pieces[p.y][p.x];
-            this._pieces[m.y][m.x].x = m.x;
-            this._pieces[m.y][m.x].y = m.y;
-            this._pieces[p.y][p.x] = { type: "blank" };
+            this._pieces[parsedM.y][parsedM.x] = this._pieces[parsedP.y][
+                parsedP.x
+            ];
+            this._pieces[parsedM.y][parsedM.x].x = parsedM.x;
+            this._pieces[parsedM.y][parsedM.x].y = parsedM.y;
+            this._pieces[parsedP.y][parsedP.x] = { type: "blank" };
             return true;
         }
     },
@@ -165,7 +179,7 @@ const Board = {
                 } else {
                     const b = document.createElement("div");
                     b.className = "blank";
-                    b.id = `{"x":${x}, "y":${y}}`;
+                    b.id = `{"x":${x},"y":${y}}`;
                     pc.appendChild(b);
                 }
             }
@@ -173,20 +187,30 @@ const Board = {
     },
 
     renderMoveIndicators() {
+        let ps = Object.keys(this.possibleMoves);
         document.querySelectorAll(".blank").forEach(el => (el.innerHTML = ""));
         document.querySelectorAll(".piece").forEach(el => (el.innerHTML = ""));
         ps.forEach(p => {
             let pElement = document.getElementById(p);
-            let marker = createMarkerEl();
+            let marker = this.createMarkerEl();
             pElement.appendChild(marker);
         });
-        if (selectedPiecePos) {
-            moves[selectedPiecePos].forEach(m => {
+        if (Object.keys(this.possibleMoves).includes(this._selectedPieceCoor)) {
+            this.possibleMoves[this._selectedPieceCoor].forEach(m => {
                 let mElement = document.getElementById(m[0]);
-                let marker = createMarkerEl();
+                let marker = this.createMarkerEl();
                 mElement.appendChild(marker);
             });
         }
+    },
+
+    createMarkerEl() {
+        let marker = document.createElement("div");
+        marker.className = "marker";
+        activePlayer == "1"
+            ? (marker.style.backgroundColor = "black")
+            : (marker.style.backgroundColor = "white");
+        return marker;
     },
 
     // HELPERS
@@ -205,44 +229,28 @@ const Board = {
         }
     },
 
-    isValidMove(move) {
-        let [p, m] = move;
-        let selP = this.getPiece(p);
-        // console.log(JSON.stringify(m));
-        console.log(`can move: ${this.canMove}`);
-        console.log(`can capture: ${this.canCapture}`);
-        // console.log(`selP can move: ${selP.canMove}`);
-        // console.log(`selP moves: ${selP.moves}`);
-        // console.log(
-        //     `selP m in moves: ${selP.moves.includes(JSON.stringify(m))}`
-        // );
-        console.log(this._pieces);
-        if (
-            this.canCapture &&
-            selP.canCapture &&
-            selP.moves.map(mv => mv[1]).includes(JSON.stringify(m))
-        ) {
-            console.log("valid capture move");
-            return true;
-        } else if (
-            !this.canCapture &&
-            this.canMove &&
-            selP.canMove &&
-            selP.moves.includes(JSON.stringify(m))
-        ) {
-            console.log("valid move");
-            return true;
+    addPiece(key, type, arr) {
+        if (typeof this._possibleMoves[type][key] == "object") {
+            this._possibleMoves[type][key].push(arr);
         } else {
-            console.log("invalid move");
-            return false;
+            this._possibleMoves[type][key] = [];
+            this._possibleMoves[type][key].push(arr);
         }
     },
 
+    isValidMove(move) {
+        let [p, m] = move;
+        return Object.keys(this.possibleMoves).includes(p) &&
+            this.possibleMoves[p].map(mv => mv[0]).includes(m)
+            ? true
+            : false;
+    },
+
     prepNextTurn() {
+        this._selectedPieceCoor = "";
         this._possibleMoves = { std: {}, capture: {} };
-        this.canCapture = false;
-        this.canMove = false;
         this.calcMoves();
         this.renderPieces();
+        this.renderMoveIndicators();
     }
 };

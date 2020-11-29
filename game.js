@@ -16,10 +16,12 @@ window.addEventListener("load", () => {
             if (ev.target.id != "pieces-container") {
                 let coor = JSON.parse(ev.target.id);
                 if (board.getPiece(coor).player == activePlayer) {
-                    move[0] = coor;
+                    board.selectedPieceCoor = ev.target.id;
+                    board.renderMoveIndicators();
+                    move[0] = ev.target.id;
                     move[1] = null;
                 } else if (board.getPiece(coor).type == "blank") {
-                    move[1] = coor;
+                    move[1] = ev.target.id;
                 }
                 if (
                     move.includes(null) ||
