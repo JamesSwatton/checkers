@@ -11,8 +11,6 @@ let move = [];
 window.addEventListener("load", () => {
     board.setup();
 
-    // updatePieceListeners();
-
     document
         .getElementById("pieces-container")
         .addEventListener("click", ev => {
@@ -81,20 +79,5 @@ function getWinner() {
         return activePlayer == "1" ? "player 2" : "player 1";
     } else {
         return null;
-    }
-}
-
-function updatePieceListeners() {
-    let blah = document.getElementsByClassName(`player-${activePlayer}`);
-    for (let i = 0; i < blah.length; i++) {
-        blah[`${i}`].addEventListener("mouseenter", ev => {
-            console.log(ev.target)
-            board.selectedPieceCoor = ev.target.id;
-            board.renderMoveIndicators();
-        });
-        blah[`${i}`].addEventListener("mouseout", () => {
-            board.selectedPieceCoor = "";
-            board.renderMoveIndicators();
-        });
     }
 }
