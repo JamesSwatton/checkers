@@ -115,7 +115,7 @@ const Board = {
                 }
             });
         });
-        console.log(this.pieces)
+        // console.log(this.pieces)
     },
 
     // MOVEMENT
