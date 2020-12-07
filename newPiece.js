@@ -1,10 +1,9 @@
-function newPiece(x, y, player) {
+function newPiece(pos, player) {
     return {
-        x,
-        y,
+        pos,
         player,
         type: "piece",
-        isKing: false,
+        _isKing: false,
         _paths: {
             "1": [
                 { x: -1, y: 1 },
@@ -15,11 +14,25 @@ function newPiece(x, y, player) {
                 { x: 1, y: -1 }
             ],
             get king() {
-                return [this["1"], this["2"]];
+                return [...this["1"], ...this["2"]];
             }
         },
         get paths() {
-            return this.king ? this._paths.king : this._paths[this.player];
+            return this.isKing ? this._paths.king : this._paths[this.player];
         },
+
+        get isKing() {
+            if (this._isKing) {
+                return true;
+            } else if (
+                (this.player == "1" && this.pos.y == 0) ||
+                (this.player == "2" && this.pos.y == 7)
+            ) {
+                this._isKing = true;
+                return this._isKing;
+            } else {
+                return false;
+            }
+        }
     };
 }

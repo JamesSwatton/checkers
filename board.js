@@ -11,14 +11,14 @@ const Board = {
     ],
 
     testLayout: [
-        "20202020",
+        "20202010",
         "02020202",
         "20202020",
         "00000000",
-        "00001000",
-        "01010001",
+        "00000000",
+        "01010101",
         "10101010",
-        "01010101"
+        "01020101"
     ],
 
     _pieces: [],
@@ -71,13 +71,13 @@ const Board = {
     },
 
     createPieces() {
-        let layout = this.layout;
-        layout.forEach((row, i) => {
+        let layout = this.testLayout;
+        layout.forEach((row, y) => {
             let r = [];
-            row.split("").forEach((el, j) => {
+            row.split("").forEach((el, x) => {
                 el == "0"
                     ? r.push({ type: "blank" })
-                    : r.push(newPiece(j, i, el));
+                    : r.push(newPiece({x:x, y:y}, el));
             });
             this._pieces.push(r);
         });
@@ -115,6 +115,7 @@ const Board = {
                 }
             });
         });
+        console.log(this.pieces)
     },
 
     // MOVEMENT
@@ -137,8 +138,7 @@ const Board = {
             this._pieces[parsedM.y][parsedM.x] = this._pieces[parsedP.y][
                 parsedP.x
             ];
-            this._pieces[parsedM.y][parsedM.x].x = parsedM.x;
-            this._pieces[parsedM.y][parsedM.x].y = parsedM.y;
+            this._pieces[parsedM.y][parsedM.x].pos = {x:parsedM.x, y:parsedM.y};
             this._pieces[parsedP.y][parsedP.x] = { type: "blank" };
             return true;
         }
@@ -172,16 +172,15 @@ const Board = {
                 pEl.id = `{"x":${x},"y":${y}}`;
                 if (p.player == "1") {
                     pEl.classList.add("player-1");
-                    pc.appendChild(pEl);
                 } else if (p.player == "2") {
                     pEl.classList.add("player-2");
-                    pc.appendChild(pEl);
                 } else {
-                    const b = document.createElement("div");
-                    b.className = "blank";
-                    b.id = `{"x":${x},"y":${y}}`;
-                    pc.appendChild(b);
+                    pEl.className = "blank";
                 }
+                // if (p.player && p.isKing) {
+                //     eEl.classList.add("king");
+                // }
+                pc.appendChild(pEl);
             }
         }
     },
