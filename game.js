@@ -10,8 +10,8 @@ let move = [];
 // USER INTERACTION
 window.addEventListener("load", () => {
     board.setup();
-    console.log(board.canMove);
-    console.log(board.canCapture);
+
+    // updatePieceListeners();
 
     document
         .getElementById("pieces-container")
@@ -41,6 +41,7 @@ window.addEventListener("load", () => {
                                 if (!board.canCapture) {
                                     swapPlayers();
                                     board.prepNextTurn();
+                                    // updatePieceListeners();
                                     winner = getWinner();
                                     if (winner) {
                                         console.log(`${winner} has won!`);
@@ -51,6 +52,7 @@ window.addEventListener("load", () => {
                             if (board.movePiece(move)) {
                                 swapPlayers();
                                 board.prepNextTurn();
+                                // updatePieceListeners();
                                 winner = getWinner();
                                 if (winner) {
                                     console.log(`${winner} has won!`);
@@ -79,5 +81,20 @@ function getWinner() {
         return activePlayer == "1" ? "player 2" : "player 1";
     } else {
         return null;
+    }
+}
+
+function updatePieceListeners() {
+    let blah = document.getElementsByClassName(`player-${activePlayer}`);
+    for (let i = 0; i < blah.length; i++) {
+        blah[`${i}`].addEventListener("mouseenter", ev => {
+            console.log(ev.target)
+            board.selectedPieceCoor = ev.target.id;
+            board.renderMoveIndicators();
+        });
+        blah[`${i}`].addEventListener("mouseout", () => {
+            board.selectedPieceCoor = "";
+            board.renderMoveIndicators();
+        });
     }
 }

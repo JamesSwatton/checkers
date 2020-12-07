@@ -71,13 +71,13 @@ const Board = {
     },
 
     createPieces() {
-        let layout = this.testLayout;
+        let layout = this.layout;
         layout.forEach((row, y) => {
             let r = [];
             row.split("").forEach((el, x) => {
                 el == "0"
                     ? r.push({ type: "blank" })
-                    : r.push(newPiece({x:x, y:y}, el));
+                    : r.push(newPiece({ x: x, y: y }, el));
             });
             this._pieces.push(r);
         });
@@ -138,7 +138,10 @@ const Board = {
             this._pieces[parsedM.y][parsedM.x] = this._pieces[parsedP.y][
                 parsedP.x
             ];
-            this._pieces[parsedM.y][parsedM.x].pos = {x:parsedM.x, y:parsedM.y};
+            this._pieces[parsedM.y][parsedM.x].pos = {
+                x: parsedM.x,
+                y: parsedM.y
+            };
             this._pieces[parsedP.y][parsedP.x] = { type: "blank" };
             return true;
         }
@@ -177,9 +180,9 @@ const Board = {
                 } else {
                     pEl.className = "blank";
                 }
-                // if (p.player && p.isKing) {
-                //     eEl.classList.add("king");
-                // }
+                if (p.player && p.isKing) {
+                    pEl.appendChild(this.createEl("div", { class: "king" }));
+                }
                 pc.appendChild(pEl);
             }
         }
@@ -188,28 +191,47 @@ const Board = {
     renderMoveIndicators() {
         let ps = Object.keys(this.possibleMoves);
         document.querySelectorAll(".blank").forEach(el => (el.innerHTML = ""));
-        document.querySelectorAll(".piece").forEach(el => (el.innerHTML = ""));
+        document.querySelectorAll(".marker").forEach(el => {
+            if (el.parentNode) {
+                el.parentNode.removeChild(el);
+            }
+        });
+        let getStyle = () =>
+            activePlayer == "1"
+                ? "background-color: black"
+                : "background-color: white";
         ps.forEach(p => {
             let pElement = document.getElementById(p);
-            let marker = this.createMarkerEl();
+            let marker = this.createEl("div", {
+                class: "marker",
+                style: "background-color: #dc4c38"
+            });
+            if (p == this._selectedPieceCoor) {
+                marker = this.createEl("div", {
+                    class: "marker",
+                    style: `${getStyle()}`
+                });
+            }
             pElement.appendChild(marker);
         });
         if (Object.keys(this.possibleMoves).includes(this._selectedPieceCoor)) {
             this.possibleMoves[this._selectedPieceCoor].forEach(m => {
                 let mElement = document.getElementById(m[0]);
-                let marker = this.createMarkerEl();
+                let marker = this.createEl("div", {
+                    class: "marker",
+                    style: `${getStyle()}`
+                });
                 mElement.appendChild(marker);
             });
         }
     },
 
-    createMarkerEl() {
-        let marker = document.createElement("div");
-        marker.className = "marker";
-        activePlayer == "1"
-            ? (marker.style.backgroundColor = "black")
-            : (marker.style.backgroundColor = "white");
-        return marker;
+    createEl(name, attrs) {
+        let el = document.createElement(name);
+        for (attr in attrs) {
+            el.setAttribute(attr, attrs[attr]);
+        }
+        return el;
     },
 
     // HELPERS

@@ -36,6 +36,8 @@
 }
 
 .piece {
+    position: relative;
+    top: 0;
     display: flex;
     justify-content: center;
     align-items: center;
@@ -43,6 +45,12 @@
     width: 85%;
     height: 85%;
     border-radius: 50%;
+    transition: top 0.2s;
+}
+
+.piece:hover {
+    top: -3px;
+    cursor: pointer;
 }
 
 .blank {
@@ -51,21 +59,35 @@
     align-items: center;
 }
 
-.piece:hover {
-    cursor: pointer;
-}
-
 .player-1 {
     background-color: #d3af3f;
+    transition: box-shadow 0.1s;
+}
+.player-1:hover {
+    box-shadow: 4px 4px 4px black;
 }
 
 .player-2 {
     background-color: #202c8e;
+    transition: box-shadow 0.1s;
+}
+.player-2:hover {
+    box-shadow: 4px 4px 4px #efeeee;
 }
 
 .marker {
     width: 10px;
     height: 10px;
     border-radius: 50%;
+    pointer-events: none;
+}
+
+.king {
+    position: absolute;
+    width: 70%;
+    height: 70%;
+    border-radius: 50%;
+    border: 2px solid;
+    border-color: #dc4c38;
     pointer-events: none;
 }
