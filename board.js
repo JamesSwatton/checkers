@@ -11,14 +11,14 @@ const Board = {
     ],
 
     testLayout: [
-        "20202010",
-        "02020202",
         "20202020",
-        "00000000",
+        "02000002",
+        "20202020",
+        "01000001",
         "00000000",
         "01010101",
         "10101010",
-        "01020101"
+        "01010101"
     ],
 
     _pieces: [],
@@ -71,19 +71,20 @@ const Board = {
     },
 
     createPieces() {
-        let layout = this.layout;
+        let layout = this.testLayout;
         layout.forEach((row, y) => {
             let r = [];
             row.split("").forEach((el, x) => {
                 el == "0"
                     ? r.push({ type: "blank" })
-                    : r.push(newPiece({ x: x, y: y }, el));
+                    : r.push(newPiece(`${x}${y}`, { x: x, y: y }, el));
             });
             this._pieces.push(r);
         });
     },
 
     calcMoves() {
+        this._possibleMoves = { std: {}, capture: {} };
         this._pieces.forEach((row, y) => {
             row.forEach((p, x) => {
                 if (p.player == activePlayer) {
@@ -267,9 +268,13 @@ const Board = {
             : false;
     },
 
+    filterCaptureMoves() {
+        for (let m in this._possibleMoves.capture) {
+        }
+    },
+
     prepNextTurn() {
         this._selectedPieceCoor = "";
-        this._possibleMoves = { std: {}, capture: {} };
         this.calcMoves();
         this.renderPieces();
         this.renderMoveIndicators();

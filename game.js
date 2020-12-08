@@ -10,15 +10,16 @@ let move = [];
 // USER INTERACTION
 window.addEventListener("load", () => {
     board.setup();
+    console.log(board.pieces);
 
-    document
-        .getElementById("pieces-container")
-        .addEventListener("click", ev => {
-            // won't throw and error if you select the board
-            if (!winner) {
+    if (activePlayer == "1") {
+        document
+            .getElementById("pieces-container")
+            .addEventListener("click", ev => {
+                // won't throw and error if you select the board
                 if (ev.target.id != "pieces-container") {
                     let coor = JSON.parse(ev.target.id);
-                    if (board.getPiece(coor).player == activePlayer) {
+                    if (board.getPiece(coor).player == "1") {
                         board.selectedPieceCoor = ev.target.id;
                         board.renderMoveIndicators();
                         move[0] = ev.target.id;
@@ -26,6 +27,7 @@ window.addEventListener("load", () => {
                     } else if (board.getPiece(coor).type == "blank") {
                         move[1] = ev.target.id;
                     }
+                    console.log(move);
                     if (
                         move.includes(null) ||
                         move.includes(undefined) ||
@@ -33,34 +35,13 @@ window.addEventListener("load", () => {
                     ) {
                         return;
                     } else {
-                        if (board.canCapture) {
-                            if (board.movePiece(move)) {
-                                board.prepNextTurn();
-                                if (!board.canCapture) {
-                                    swapPlayers();
-                                    board.prepNextTurn();
-                                    // updatePieceListeners();
-                                    winner = getWinner();
-                                    if (winner) {
-                                        console.log(`${winner} has won!`);
-                                    }
-                                }
-                            }
-                        } else if (board.canMove) {
-                            if (board.movePiece(move)) {
-                                swapPlayers();
-                                board.prepNextTurn();
-                                // updatePieceListeners();
-                                winner = getWinner();
-                                if (winner) {
-                                    console.log(`${winner} has won!`);
-                                }
-                            }
+                        if (playerMakeMove(move)) {
+                            computerMakeMove();
                         }
                     }
                 }
-            }
-        });
+            });
+    }
 });
 
 // HELPERS
@@ -80,4 +61,72 @@ function getWinner() {
     } else {
         return null;
     }
+}
+
+function playerMakeMove(move) {
+    if (board.canCapture) {
+        let currentState = board.getPiece(JSON.parse(move[0])).isKing;
+        let newState;
+        if (board.movePiece(move)) {
+            board.prepNextTurn();
+            newState = board.getPiece(JSON.parse(move[1])).isKing;
+            if (board.canCapture && currentState == newState) {
+                return;
+            } else {
+                swapPlayers();
+                board.prepNextTurn();
+                return true;
+            }
+        }
+    } else if (board.canMove) {
+        if (board.movePiece(move)) {
+            swapPlayers();
+            board.prepNextTurn();
+            return true;
+        }
+    } else {
+        winner = getWinner();
+        if (winner) {
+            console.log(`${winner} has won!`);
+        }
+    }
+}
+
+function computerMakeMove() {
+    if (board.canCapture) {
+        setTimeout(() => {
+            let move = computerGetMove();
+            let currentState = board.getPiece(JSON.parse(move[0])).isKing;
+            let newState;
+            board.movePiece(computerGetMove());
+            board.prepNextTurn();
+            newState = board.getPiece(JSON.parse(move[1])).isKing;
+            if (board.canCapture && currentState == newState) {
+                computerMakeMove();
+            } else {
+                swapPlayers();
+                board.prepNextTurn();
+            }
+        }, 1000);
+    } else if (board.canMove) {
+        console.log("hi");
+        setTimeout(() => {
+            board.movePiece(computerGetMove());
+            swapPlayers();
+            board.prepNextTurn();
+        }, 1000);
+    }
+}
+
+function computerGetMove() {
+    let move = [];
+    let randomPiecePos = Math.floor(
+        Math.random() * Object.keys(board.possibleMoves).length
+    );
+    move[0] = Object.keys(board.possibleMoves)[randomPiecePos];
+    let randomMovePos = Math.floor(
+        Math.random() * board.possibleMoves[move[0]].length
+    );
+    move[1] = board.possibleMoves[move[0]][randomMovePos][0];
+    return move;
 }

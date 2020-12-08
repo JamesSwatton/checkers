@@ -4,6 +4,7 @@
 }
 
 #game-container {
+    margin: auto;
     position: relative;
 }
 
