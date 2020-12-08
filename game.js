@@ -11,6 +11,7 @@ let move = [];
 window.addEventListener("load", () => {
     board.setup();
     console.log(board.pieces);
+    console.log(board.possibleMoves);
 
     if (activePlayer == "1") {
         document
