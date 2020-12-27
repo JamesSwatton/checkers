@@ -33,6 +33,12 @@ const Board = {
         this._selectedPieceCoor = coor;
     },
 
+    _moveChainCoor: "",
+
+    set moveChainCoor(i) {
+        this._moveChainCoor = "";
+    },
+
     _canCapture: false,
 
     get canCapture() {
@@ -71,13 +77,13 @@ const Board = {
     },
 
     createPieces() {
-        let layout = this.testLayout;
+        let layout = this.layout;
         layout.forEach((row, y) => {
             let r = [];
             row.split("").forEach((el, x) => {
                 el == "0"
                     ? r.push({ type: "blank" })
-                    : r.push(newPiece(`${x}${y}`, { x: x, y: y }, el));
+                    : r.push(newPiece({ x: x, y: y }, el));
             });
             this._pieces.push(r);
         });
@@ -116,7 +122,7 @@ const Board = {
                 }
             });
         });
-        // console.log(this.pieces)
+        this.filterCaptureMoves();
     },
 
     // MOVEMENT
@@ -144,6 +150,8 @@ const Board = {
                 y: parsedM.y
             };
             this._pieces[parsedP.y][parsedP.x] = { type: "blank" };
+
+            this._moveChainCoor = m;
             return true;
         }
     },
@@ -269,7 +277,19 @@ const Board = {
     },
 
     filterCaptureMoves() {
-        for (let m in this._possibleMoves.capture) {
+        if (this._moveChainCoor) {
+            if (
+                Object.keys(this._possibleMoves.capture).includes(
+                    this._moveChainCoor
+                )
+            ) {
+                const captureCopy = { ...this._possibleMoves.capture };
+                this._possibleMoves.capture = {};
+                this._possibleMoves.capture[this._moveChainCoor] =
+                    captureCopy[this._moveChainCoor];
+            } else {
+                this._possibleMoves.capture = {};
+            }
         }
     },
 

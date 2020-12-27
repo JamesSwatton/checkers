@@ -1,6 +1,5 @@
-function newPiece(id, pos, player) {
+function newPiece(pos, player) {
     return {
-        id,
         pos,
         player,
         type: "piece",

@@ -47,6 +47,8 @@ window.addEventListener("load", () => {
 
 // HELPERS
 function swapPlayers() {
+    board.moveChainCoor = "";
+
     if (activePlayer == "1") {
         activePlayer = "2";
         opponent = "1";
