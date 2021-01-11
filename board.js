@@ -32,7 +32,6 @@ const Board = {
     //     "01010101"
     // ],
 
-
     _pieces: [],
 
     get pieces() {

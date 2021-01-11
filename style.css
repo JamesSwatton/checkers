@@ -48,8 +48,13 @@ body {
     transition: color 1.5s, margin-bottom 1.5s;
 }
 
-#game-status {
+.game-status {
+    margin-top: 30px;
     text-align: center;
+}
+
+#game-status-emoticon {
+    margin-top: 10px;
 }
 
 #game-container {

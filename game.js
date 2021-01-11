@@ -64,58 +64,63 @@ function swapPlayers() {
 function getWinner() {
     let winner = null;
     if (!board.canMove && !board.canCapture) {
-        winner = activePlayer == "1" ? "Player 2" : "Player 1";
-        console.log(`${winner} is the winner!`);
+        winner = activePlayer == "1" ? "2" : "1";
         renderWinner(winner);
     }
 }
 
 function renderWinner(winner) {
+    const message = () => {
+        if (winner == "1") {
+            return { text: "You won!", emoticon: "(. ❛ ᴗ ❛.)" };
+        } else {
+            return { text: "Com wins...", emoticon: "╮ (. ❛ ᴗ ❛.) ╭" };
+        }
+    };
+    document.getElementById("game-status-text").innerHTML = message().text;
     document.getElementById(
-        "game-status"
-    ).innerHTML = `${winner} is the winner!`;
+        "game-status-emoticon"
+    ).innerHTML = message().emoticon;
 }
 
 function playerMakeMove(move) {
-    winner = getWinner();
     if (board.canCapture) {
         let currentState = board.getPiece(JSON.parse(move[0])).isKing;
         let newState;
         if (board.movePiece(move)) {
-            board.prepNextTurn();
+            prepNextTurn();
             newState = board.getPiece(JSON.parse(move[1])).isKing;
             if (board.canCapture && currentState == newState) {
                 return;
             } else {
                 swapPlayers();
-                board.prepNextTurn();
+                prepNextTurn();
                 return true;
             }
         }
     } else if (board.canMove) {
         if (board.movePiece(move)) {
             swapPlayers();
-            board.prepNextTurn();
+            prepNextTurn();
             return true;
         }
     }
 }
 
 function computerMakeMove() {
-    winner = getWinner();
     if (board.canCapture) {
         setTimeout(() => {
             let move = computerGetMove();
             let currentState = board.getPiece(JSON.parse(move[0])).isKing;
             let newState;
             board.movePiece(computerGetMove());
-            board.prepNextTurn();
+            prepNextTurn();
             newState = board.getPiece(JSON.parse(move[1])).isKing;
             if (board.canCapture && currentState == newState) {
                 computerMakeMove();
             } else {
                 swapPlayers();
-                board.prepNextTurn();
+                prepNextTurn();
             }
         }, 1000);
     } else if (board.canMove) {
@@ -123,7 +128,7 @@ function computerMakeMove() {
         setTimeout(() => {
             board.movePiece(computerGetMove());
             swapPlayers();
-            board.prepNextTurn();
+            prepNextTurn();
         }, 1000);
     }
 }
@@ -139,6 +144,11 @@ function computerGetMove() {
     );
     move[1] = board.possibleMoves[move[0]][randomMovePos][0];
     return move;
+}
+
+function prepNextTurn() {
+    board.prepNextTurn();
+    getWinner();
 }
 
 // STARTUP ANIMATION
