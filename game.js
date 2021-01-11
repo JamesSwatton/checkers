@@ -6,12 +6,16 @@ let activePlayer = "1";
 let opponent = "2";
 let move = [];
 
-// USER INTERACTION
 window.addEventListener("load", () => {
     board.setup();
     console.log(board.pieces);
     console.log(board.possibleMoves);
 
+    document.getElementById("title").addEventListener("click", () => {
+        startAnimation();
+    });
+
+    // USER INTERACTION
     if (activePlayer == "1") {
         document
             .getElementById("pieces-container")
@@ -62,13 +66,14 @@ function getWinner() {
     if (!board.canMove && !board.canCapture) {
         winner = activePlayer == "1" ? "Player 2" : "Player 1";
         console.log(`${winner} is the winner!`);
-        renderWinner(winner)
+        renderWinner(winner);
     }
 }
 
 function renderWinner(winner) {
-    document.getElementById("game-status").innerHTML = 
-        `${winner} is the winner!`
+    document.getElementById(
+        "game-status"
+    ).innerHTML = `${winner} is the winner!`;
 }
 
 function playerMakeMove(move) {
@@ -134,4 +139,23 @@ function computerGetMove() {
     );
     move[1] = board.possibleMoves[move[0]][randomMovePos][0];
     return move;
+}
+
+// STARTUP ANIMATION
+function startAnimation() {
+    const gradient = document.getElementById("gradient");
+    const gradient2 = document.getElementById("gradient-2");
+    const title = document.getElementById("title");
+    const boardContainer = document.getElementById("board-container");
+    document.body.style.top = "0";
+    gradient.style.height = "0";
+    title.style.color = "white";
+    title.style.marginBottom = "0";
+    setTimeout(() => {
+        boardContainer.style.boxShadow = "10px 10px 30px black";
+        gradient2.style.backgroundColor = "rgba(255, 255, 255, 0)";
+        setTimeout(() => {
+            gradient2.style.display = "none";
+        }, 2000);
+    }, 1500);
 }
