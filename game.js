@@ -2,7 +2,6 @@ let board;
 board = Object.create(Board);
 
 // STATE
-let winner = null;
 let activePlayer = "1";
 let opponent = "2";
 let move = [];
@@ -28,7 +27,7 @@ window.addEventListener("load", () => {
                     } else if (board.getPiece(coor).type == "blank") {
                         move[1] = ev.target.id;
                     }
-                    console.log(move);
+                    // console.log(move);
                     if (
                         move.includes(null) ||
                         move.includes(undefined) ||
@@ -59,14 +58,21 @@ function swapPlayers() {
 }
 
 function getWinner() {
+    let winner = null;
     if (!board.canMove && !board.canCapture) {
-        return activePlayer == "1" ? "player 2" : "player 1";
-    } else {
-        return null;
+        winner = activePlayer == "1" ? "Player 2" : "Player 1";
+        console.log(`${winner} is the winner!`);
+        renderWinner(winner)
     }
 }
 
+function renderWinner(winner) {
+    document.getElementById("game-status").innerHTML = 
+        `${winner} is the winner!`
+}
+
 function playerMakeMove(move) {
+    winner = getWinner();
     if (board.canCapture) {
         let currentState = board.getPiece(JSON.parse(move[0])).isKing;
         let newState;
@@ -87,15 +93,11 @@ function playerMakeMove(move) {
             board.prepNextTurn();
             return true;
         }
-    } else {
-        winner = getWinner();
-        if (winner) {
-            console.log(`${winner} has won!`);
-        }
     }
 }
 
 function computerMakeMove() {
+    winner = getWinner();
     if (board.canCapture) {
         setTimeout(() => {
             let move = computerGetMove();
