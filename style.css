@@ -38,7 +38,7 @@ body {
 }
 
 #title {
-    cursor: pointer;
+    cursor: default;
     margin-left: var(--board-border);
     margin-bottom: 20px;
     width: var(--board-size);
@@ -48,13 +48,37 @@ body {
     transition: color 1.5s, margin-bottom 1.5s;
 }
 
-.game-status {
-    margin-top: 30px;
+#game-status-container {
+    cursor: pointer;
+    padding: 5px;
+    position: absolute;
+    top: 48%;
+    left: 148px;
+    width: 50%;
+    background-color: white;
+    border: 2px solid black;
+    box-shadow: 10px 10px 20px black;
+    color: black;
     text-align: center;
+    transition: top 1.2s ease-out, color 1s, border 1s, box-shadow 1s;
 }
 
 #game-status-emoticon {
-    margin-top: 10px;
+    display: none;
+}
+
+#game-status-play {
+    margin-top: 30px;
+    display: none;
+}
+
+.again {
+    cursor: pointer;
+}
+
+.again:hover {
+    background-color: black;
+    color: white;
 }
 
 #game-container {

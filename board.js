@@ -21,16 +21,16 @@ const Board = {
     //     "01010101"
     // ],
 
-    // winLayout: [
-    //     "00000000",
-    //     "00000000",
-    //     "00200000",
-    //     "00010000",
-    //     "00000000",
-    //     "01010101",
-    //     "10101010",
-    //     "01010101"
-    // ],
+    winLayout: [
+        "00000000",
+        "00000000",
+        "00200000",
+        "00010000",
+        "00000000",
+        "01010101",
+        "10101010",
+        "01010101"
+    ],
 
     _pieces: [],
 
@@ -80,6 +80,8 @@ const Board = {
 
     // SETUP
     setup() {
+        this._canCapture = false;
+        this._canMove = false;
         this.createPieces();
         this.calcMoves();
         this.renderBoard();
@@ -88,6 +90,7 @@ const Board = {
     },
 
     createPieces() {
+        this._pieces = [];
         let layout = this.layout;
         layout.forEach((row, y) => {
             let r = [];
