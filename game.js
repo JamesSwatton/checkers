@@ -191,7 +191,7 @@ function newGameAnimation() {
     gradient.style.height = "0";
     title.style = "color: white; margin-bottom: 0";
     gameStatusContainer.style =
-        "top: 100%; color: white; border: 2px solid white; box-shadow: 0px 0px 5px white";
+        "top: 100%; color: white; border: 2px solid white; box-shadow: 0px 0px 0px white";
     setTimeout(() => {
         boardContainer.style.boxShadow = "10px 10px 30px black";
         gradient2.style.backgroundColor = "rgba(255, 255, 255, 0)";

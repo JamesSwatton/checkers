@@ -93,8 +93,8 @@ body {
     grid-template-columns: repeat(8, 1fr);
     grid-template-rows: repeat(8, 1fr);
     border: var(--board-border) solid black;
-    box-shadow: 10px 10px 30px white;
-    transition: box-shadow 2s;
+    box-shadow: 0 0 0 black;
+    transition: box-shadow 1.5s;
 }
 
 .dark {
